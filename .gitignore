@@ -1,0 +1,13 @@
+# Ignorar carpetas grandes e innecesarias de Unity
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+MemoryCaptures/
+
+# Ignorar archivos de Visual Studio y otros temporales
+.vs/
+*.csproj
+*.sln
