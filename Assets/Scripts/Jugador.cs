@@ -12,6 +12,10 @@ public class Jugador : MonoBehaviour
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
+    [Header("Salud")]
+    [SerializeField] private int vidas = 3; // Ajustado a 3 para dificultad estándar
+    [SerializeField] private GameObject efectoExplosion; // Arrastra un sistema de partículas aquí
+
     private Rigidbody2D naveRigidbody;
     private bool estaVivo = true;
     private bool estaAcelerando = false;
@@ -21,7 +25,6 @@ public class Jugador : MonoBehaviour
     private void Start()
     {
         naveRigidbody = GetComponent<Rigidbody2D>();
-        // Asegúrate de que Gravity Scale sea 0 en el Inspector
     }
 
     private void Update()
@@ -30,7 +33,6 @@ public class Jugador : MonoBehaviour
 
         HandleEntradas();
 
-        // Lógica de disparo con Cooldown
         if (Input.GetKey(KeyCode.Space) && Time.time >= tiempoProximoDisparo)
         {
             Disparar();
@@ -42,29 +44,24 @@ public class Jugador : MonoBehaviour
     {
         if (!estaVivo) return;
 
-        // Aplicar aceleración
         if (estaAcelerando)
         {
             naveRigidbody.AddForce(transform.up * aceleracionNave);
         }
 
-        // Limitar velocidad máxima (Evita el error de obsoleto)
         if (naveRigidbody.linearVelocity.sqrMagnitude > maximaVelocidad * maximaVelocidad)
         {
             naveRigidbody.linearVelocity = naveRigidbody.linearVelocity.normalized * maximaVelocidad;
         }
 
-        // Aplicar rotación
         float rotacion = direccionRotacion * rotacionVelocidad * Time.fixedDeltaTime;
         naveRigidbody.MoveRotation(naveRigidbody.rotation + rotacion);
     }
 
     private void HandleEntradas()
     {
-        // Aceleración (W o Flecha Arriba)
         estaAcelerando = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
 
-        // Rotación (A/D o Flechas Izq/Der)
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
             direccionRotacion = 1f;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
@@ -78,6 +75,62 @@ public class Jugador : MonoBehaviour
         if (balaPrefab != null && puntoDisparo != null)
         {
             Instantiate(balaPrefab, puntoDisparo.position, puntoDisparo.rotation);
+        }
+    }
+
+    // --- NUEVAS FUNCIONES DE DAÑO Y MUERTE ---
+
+    public void TomarDaño()
+    {
+        if (!estaVivo) return;
+
+        vidas--;
+        Debug.Log("Vidas restantes: " + vidas);
+
+        if (vidas <= 0)
+        {
+            Muerte();
+        }
+        else
+        {
+            ResetearPosicion();
+        }
+    }
+
+    private void ResetearPosicion()
+    {
+        // Pequeño efecto visual al chocar (opcional)
+        if (efectoExplosion != null)
+        {
+            Instantiate(efectoExplosion, transform.position, Quaternion.identity);
+        }
+
+        transform.position = Vector3.zero;
+        naveRigidbody.linearVelocity = Vector2.zero;
+        naveRigidbody.angularVelocity = 0f;
+    }
+
+    private void Muerte()
+    {
+        estaVivo = false;
+
+        // Efecto de explosión final
+        if (efectoExplosion != null)
+        {
+            Instantiate(efectoExplosion, transform.position, Quaternion.identity);
+        }
+
+        gameObject.SetActive(false);
+        Debug.Log("Game Over");
+
+        // LLAMADA AL GAMEMANAGER: Esto guarda los puntos y cambia a la escena "Final"
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.Morir();
+        }
+        else
+        {
+            Debug.LogError("Falta el GameManager en la escena para procesar la muerte.");
         }
     }
 }

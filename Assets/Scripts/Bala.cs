@@ -8,20 +8,19 @@ public class Bala : MonoBehaviour
 
     private Rigidbody2D rb;
 
-    void Start()
+    private void Start() // Cambiado a Start para asegurar que el RB esté listo
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // Usamos transform.up porque rotamos el prefab para que su punta sea el eje Y
+        // IMPORTANTE: Le damos velocidad hacia "arriba" relativo a la bala
+        // transform.up es la dirección hacia donde apunta el frente de la bala
         rb.linearVelocity = transform.up * velocidad;
 
-        // Se destruye automáticamente para limpiar la jerarquía
         Destroy(gameObject, tiempoVida);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Si choca con un asteroide (o pared si quieres), se destruye
         if (collision.CompareTag("Asteroide"))
         {
             Destroy(gameObject);
