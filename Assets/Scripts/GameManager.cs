@@ -34,49 +34,52 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator IniciarNuevoNivel()
     {
+        // 1. UI de nivel
         textoNivel.text = "NIVEL " + nivelActual;
         textoNivel.gameObject.SetActive(true);
 
-        yield return new WaitForSeconds(2f);
+        // 2. Activar escudo al jugador al inicio de cada nivel
+        Jugador player = FindFirstObjectByType<Jugador>();
+        if (player != null)
+        {
+            player.ActivarEscudoTemporal(3f); // 3 segundos de invulnerabilidad
+        }
 
+        yield return new WaitForSeconds(2f);
         textoNivel.gameObject.SetActive(false);
 
-        // Spawn de Asteroides
+        // 3. Spawn de Asteroides según nivel
         int cantidadASpawnear = asteroidesBase + nivelActual;
         for (int i = 0; i < cantidadASpawnear; i++)
         {
-            spawner.SpawnIndividual();
+            if (spawner != null) spawner.SpawnIndividual();
         }
-
-        // Opcional: Podrías añadir aquí lógica para spawnear naves según el nivel
     }
 
     public void CheckNivelCompletado()
     {
-        // Llamamos a la validación con un pequeñísimo retraso
-        // Esto es para que el objeto que acaba de morir se destruya del todo
+        // Pequeño retraso para dejar que los objetos se destruyan/desactiven
         Invoke("ValidarEnemigosRestantes", 0.1f);
     }
 
     private void ValidarEnemigosRestantes()
     {
-        // 1. Contar Asteroides
+        // Contar Asteroides activos (usando Pool)
         GameObject[] asteroides = GameObject.FindGameObjectsWithTag("Asteroide");
         int contadorAsteroides = 0;
         foreach (GameObject ast in asteroides) if (ast.activeInHierarchy) contadorAsteroides++;
 
-        // 2. Contar Naves Enemigas
+        // Contar Naves Enemigas
         GameObject[] naves = GameObject.FindGameObjectsWithTag("EnemigoNave");
-        int contadorNaves = naves.Length; // Las naves se destruyen, no se desactivan
+        int contadorNaves = naves.Length;
 
-        Debug.Log($"Enemigos restantes: Asteroides({contadorAsteroides}) Naves({contadorNaves})");
-
-        // 3. Si ambos están en cero, pasar nivel
+        // Si la pantalla está limpia, siguiente nivel
         if (contadorAsteroides == 0 && contadorNaves == 0)
         {
             StopAllCoroutines();
             nivelActual++;
 
+            // Aumento de dificultad progresivo
             if (multiplicadorVelocidad < 2.0f)
                 multiplicadorVelocidad += 0.1f;
 

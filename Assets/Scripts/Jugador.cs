@@ -1,17 +1,16 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class Jugador : MonoBehaviour
 {
-    // ... Tus variables anteriores se mantienen igual ...
-    [Header("Parametros Nave")]
+    [Header("Parámetros Nave")]
     [SerializeField] private float aceleracionNave = 10f;
     [SerializeField] private float maximaVelocidad = 10f;
     [SerializeField] private float rotacionVelocidad = 180f;
 
     [Header("Invulnerabilidad")]
-    [SerializeField] private float tiempoInvulnerable = 2f;
+    [SerializeField] private float tiempoInvulnerableDano = 2f;
+    [SerializeField] private float tiempoInvulnerableNivel = 3f;
     [SerializeField] private float velocidadParpadeo = 0.1f;
     private bool esInvulnerable = false;
     private SpriteRenderer spriteRenderer;
@@ -20,7 +19,7 @@ public class Jugador : MonoBehaviour
     [SerializeField] private int vidas = 3;
     [SerializeField] private GameObject efectoExplosion;
 
-    [SerializeField] private GameObject balaPrefab;
+    [Header("Ajustes Disparo")]
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
@@ -30,12 +29,31 @@ public class Jugador : MonoBehaviour
     private float direccionRotacion = 0f;
     private float tiempoProximoDisparo;
 
-    private void Start() => naveRigidbody = GetComponent<Rigidbody2D>();
+    // Límites de pantalla para el Wrap Around
+    private float limiteX;
+    private float limiteY;
+
+    private void Start()
+    {
+        naveRigidbody = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Calcular límites de pantalla automáticamente basados en la cámara principal
+        Camera cam = Camera.main;
+        limiteY = cam.orthographicSize; // Mitad de la altura
+        limiteX = limiteY * cam.aspect; // Mitad de la anchura
+
+        // Escudo inicial al spawnear (Nivel 1)
+        ActivarEscudoTemporal(tiempoInvulnerableNivel);
+    }
 
     private void Update()
     {
         if (!estaVivo) return;
+
         HandleEntradas();
+        ScreenWrap(); // Aplicar el efecto Asteroids
+
         if (Input.GetKey(KeyCode.Space) && Time.time >= tiempoProximoDisparo)
         {
             Disparar();
@@ -46,11 +64,15 @@ public class Jugador : MonoBehaviour
     private void FixedUpdate()
     {
         if (!estaVivo) return;
+
+        // Movimiento
         if (estaAcelerando) naveRigidbody.AddForce(transform.up * aceleracionNave);
 
+        // Limitar velocidad
         if (naveRigidbody.linearVelocity.sqrMagnitude > maximaVelocidad * maximaVelocidad)
             naveRigidbody.linearVelocity = naveRigidbody.linearVelocity.normalized * maximaVelocidad;
 
+        // Rotación
         float rotacion = direccionRotacion * rotacionVelocidad * Time.fixedDeltaTime;
         naveRigidbody.MoveRotation(naveRigidbody.rotation + rotacion);
     }
@@ -58,15 +80,39 @@ public class Jugador : MonoBehaviour
     private void HandleEntradas()
     {
         estaAcelerando = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) direccionRotacion = 1f;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) direccionRotacion = -1f;
         else direccionRotacion = 0f;
     }
 
+    private void ScreenWrap()
+    {
+        Vector3 pos = transform.position;
+
+        // Si sale por derecha/izquierda (añadimos un pequeño margen de 0.5f)
+        if (pos.x > limiteX + 0.5f) pos.x = -limiteX - 0.5f;
+        else if (pos.x < -limiteX - 0.5f) pos.x = limiteX + 0.5f;
+
+        // Si sale por arriba/abajo
+        if (pos.y > limiteY + 0.5f) pos.y = -limiteY - 0.5f;
+        else if (pos.y < -limiteY - 0.5f) pos.y = limiteY + 0.5f;
+
+        transform.position = pos;
+    }
+
     private void Disparar()
     {
-        if (balaPrefab != null && puntoDisparo != null)
-            Instantiate(balaPrefab, puntoDisparo.position, puntoDisparo.rotation);
+        if (BalaPool.Instance != null)
+        {
+            GameObject bala = BalaPool.Instance.GetBala();
+            if (bala != null)
+            {
+                bala.transform.position = puntoDisparo.position;
+                bala.transform.rotation = puntoDisparo.rotation;
+                bala.SetActive(true);
+            }
+        }
     }
 
     public void TomarDaño()
@@ -79,18 +125,23 @@ public class Jugador : MonoBehaviour
         if (vidas <= 0) Muerte();
         else
         {
-            StartCoroutine(ActivarEscudo());
             ResetearPosicion();
+            ActivarEscudoTemporal(tiempoInvulnerableDano);
         }
     }
 
-    private IEnumerator ActivarEscudo()
+    public void ActivarEscudoTemporal(float duracion)
+    {
+        StopCoroutine("EfectoParpadeo");
+        StartCoroutine(EfectoParpadeo(duracion));
+    }
+
+    private IEnumerator EfectoParpadeo(float duracion)
     {
         esInvulnerable = true;
         float tiempoPasado = 0;
-        spriteRenderer = GetComponent<SpriteRenderer>();
 
-        while (tiempoPasado < tiempoInvulnerable)
+        while (tiempoPasado < duracion)
         {
             spriteRenderer.enabled = !spriteRenderer.enabled;
             yield return new WaitForSeconds(velocidadParpadeo);
@@ -101,31 +152,22 @@ public class Jugador : MonoBehaviour
         esInvulnerable = false;
     }
 
-    // --- AQUÍ ESTÁN LAS MODIFICACIONES DE COLISIÓN ---
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // 1. Detectar Bala Enemiga
-        if (other.CompareTag("BalaEnemigo"))
+        if (esInvulnerable) return;
+
+        if (other.CompareTag("BalaEnemigo") || other.CompareTag("EnemigoNave") || other.CompareTag("Asteroide"))
         {
             TomarDaño();
-            Destroy(other.gameObject); // Destruimos la bala que nos pegó
-        }
 
-        // 2. Detectar Nave Enemiga (Colisión física directa)
-        if (other.CompareTag("EnemigoNave"))
-        {
-            TomarDaño();
-            // Opcional: Destruir la nave enemiga al chocar con ella
-            Destroy(other.gameObject);
+            // Si es bala enemiga, desactivarla (Pool)
+            if (other.CompareTag("BalaEnemigo")) other.gameObject.SetActive(false);
         }
-
-        // 3. Detectar Vida Extra
-        if (other.CompareTag("VidaExtra"))
+        else if (other.CompareTag("VidaExtra"))
         {
             vidas++;
             if (VidaPool.Instance != null) VidaPool.Instance.SumarVidaVisual();
             Destroy(other.gameObject);
-            Debug.Log("Vidas actuales: " + vidas);
         }
     }
 

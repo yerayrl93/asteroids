@@ -143,7 +143,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 91273221}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -740,6 +740,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VidaPool
   vidaPrefab: {fileID: 5982773951263696320, guid: eaa68eae5969edf499f1b9f5f7e01ea7, type: 3}
   vidasIniciales: 3
+--- !u!1 &724133823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 724133825}
+  - component: {fileID: 724133824}
+  m_Layer: 0
+  m_Name: BalaPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &724133824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724133823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0c26ec62695e6b4787459e8a935b934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BalaPool
+  balaPrefab: {fileID: 3947695237214989453, guid: 9fa64ef4221fc224bb904f353ec0e03d, type: 3}
+  "tama\xF1oInicial": 100
+--- !u!4 &724133825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 724133823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.23147, y: 0.90409, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &728678485
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,8 +819,8 @@ MonoBehaviour:
   anchoLimite: 8
   altoLimite: 4.5
   naveEnemigaPrefab: {fileID: 55252221341017604, guid: 7e1bd04171a2cb641be6c9b96bca6922, type: 3}
-  probabilidadNave: 50.2
-  probabilidadOro: 15.8
+  probabilidadNave: 55.8
+  probabilidadOro: 10.5
 --- !u!4 &728678487
 Transform:
   m_ObjectHideFlags: 0
@@ -814,7 +860,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 809556748}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -1097,7 +1143,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1304457459}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -1311,7 +1357,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1579991404}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -1435,19 +1481,19 @@ PrefabInstance:
       objectReference: {fileID: 1190813847}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: aceleracionNave
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: efectoExplosion
       value: 
-      objectReference: {fileID: 2570389527295190038, guid: c377502676eaf2140921a995e6c09708, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: maximaVelocidad
-      value: 8
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: tiempoEntreDisparos
-      value: 0.1
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 3985106045258524362, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: m_CollisionDetection
@@ -1530,3 +1576,4 @@ SceneRoots:
   - {fileID: 328857691}
   - {fileID: 1240007942}
   - {fileID: 2111355235}
+  - {fileID: 724133825}

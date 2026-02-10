@@ -9,6 +9,8 @@ TagManager:
   - Bala
   - Limite
   - VidaExtra
+  - BalaEnemigo
+  - EnemigoNave
   layers:
   - Default
   - TransparentFX
@@ -16,11 +18,11 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Jugador
+  - BalaJugador
+  - Enemigos
+  - BalaEnemigo
+  - Coleccionables
   - 
   - 
   - 

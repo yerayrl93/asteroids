@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class EnemigoNave : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class EnemigoNave : MonoBehaviour
     public float tiempoEntreDisparos = 2f;
     public int puntosAlMorir = 500;
     private float cronometroDisparo;
+    private bool estaMuriendo = false; // Evita errores de doble muerte
 
     void Start()
     {
@@ -23,8 +25,9 @@ public class EnemigoNave : MonoBehaviour
 
     void Update()
     {
-        if (jugador == null) return;
+        if (jugador == null || estaMuriendo) return;
 
+        // Movimiento y rotación hacia el jugador
         transform.position = Vector2.MoveTowards(transform.position, jugador.position, velocidad * Time.deltaTime);
         Vector2 direccion = (Vector2)jugador.position - (Vector2)transform.position;
         float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg - 90f;
@@ -40,6 +43,7 @@ public class EnemigoNave : MonoBehaviour
 
     void Disparar()
     {
+        if (estaMuriendo) return;
         if (balaEnemigoPrefab != null && puntoDisparo != null)
         {
             GameObject bala = Instantiate(balaEnemigoPrefab, puntoDisparo.position, puntoDisparo.rotation);
@@ -50,33 +54,53 @@ public class EnemigoNave : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (estaMuriendo) return;
         if (other.CompareTag("BalaEnemigo")) return;
 
         if (other.CompareTag("Bala"))
         {
             if (GameManager.Instance != null) GameManager.Instance.GanarPuntos(puntosAlMorir);
-            Destroy(other.gameObject);
-            MuerteEnemigo();
+
+            // --- SOLUCIÓN AL BUG DE LAS BALAS ---
+            // En lugar de Destroy, desactivamos la bala para que vuelva al Pool
+            other.gameObject.SetActive(false);
+
+            StartCoroutine(SecuenciaMuerte());
         }
 
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<Jugador>().TomarDaño();
-            MuerteEnemigo();
+            Jugador scriptJugador = other.GetComponent<Jugador>();
+            if (scriptJugador != null) scriptJugador.TomarDaño();
+            StartCoroutine(SecuenciaMuerte());
         }
     }
 
-    void MuerteEnemigo()
+    // --- SECUENCIA DE EXPLOSIONES Y MUERTE SEGURA ---
+    IEnumerator SecuenciaMuerte()
     {
-        if (efectoExplosion != null)
+        estaMuriendo = true; // Bloquea el Update y disparos
+
+        // Desactivamos el sprite y el collider para que no "exista" físicamente
+        GetComponent<SpriteRenderer>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
+
+        // Bucle de explosiones (3 explosiones con ligero desfase)
+        for (int i = 0; i < 3; i++)
         {
-            Instantiate(efectoExplosion, transform.position, transform.rotation);
+            if (efectoExplosion != null)
+            {
+                Vector3 offset = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), 0);
+                Instantiate(efectoExplosion, transform.position + offset, Quaternion.identity);
+            }
+            yield return new WaitForSeconds(0.1f);
         }
 
-        // --- AVISO AL GAMEMANAGER ---
+        // Aviso al GameManager
         if (GameManager.Instance != null)
             GameManager.Instance.CheckNivelCompletado();
 
+        // Finalmente, eliminamos el objeto
         Destroy(gameObject);
     }
 }

@@ -8,24 +8,43 @@ public class Bala : MonoBehaviour
 
     private Rigidbody2D rb;
 
-    private void Start()
+    private void Awake()
     {
+        // Obtenemos la referencia una sola vez para ahorrar recursos
         rb = GetComponent<Rigidbody2D>();
+    }
 
-        // La bala sale disparada hacia donde apunta el cañón
-        rb.linearVelocity = transform.up * velocidad;
+    private void OnEnable()
+    {
+        // IMPORTANTE: Al usar Pool, cada vez que se activa la bala 
+        // debemos resetear su velocidad y dirección
+        if (rb != null)
+        {
+            rb.linearVelocity = transform.up * velocidad;
+        }
 
-        Destroy(gameObject, tiempoVida);
+        // En lugar de Destroy, usamos Invoke para "apagarla" tras el tiempo de vida
+        Invoke("Desactivar", tiempoVida);
+    }
+
+    private void OnDisable()
+    {
+        // Cancelamos cualquier Invoke pendiente al desactivar para evitar bugs
+        CancelInvoke();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Añadimos "EnemigoNave" a la lista de cosas que destruyen la bala
-        if (collision.CompareTag("Asteroide") || collision.CompareTag("EnemigoNave"))
+        // Si choca con un enemigo, asteroide o bala enemiga
+        if (collision.CompareTag("Asteroide") || collision.CompareTag("EnemigoNave") || collision.CompareTag("BalaEnemigo"))
         {
-            // NOTA: No hace falta destruir la nave aquí, 
-            // porque la propia nave ya tiene su script que detecta "Bala" y se destruye.
-            Destroy(gameObject);
+            Desactivar();
         }
+    }
+
+    private void Desactivar()
+    {
+        // El Pool Object consiste en desactivar, NO destruir
+        gameObject.SetActive(false);
     }
 }
