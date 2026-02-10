@@ -9,9 +9,6 @@ public class EnemigoNave : MonoBehaviour
     [Header("Configuración Visual")]
     public GameObject efectoExplosion;
 
-    [Header("Referencias Power-Ups")]
-    public GameObject prefabBateriaBuff; // Se asigna desde el Spawner automáticamente
-
     [Header("Ajustes")]
     public float velocidad = 3f;
     public float tiempoEntreDisparos = 2f;
@@ -21,6 +18,7 @@ public class EnemigoNave : MonoBehaviour
 
     void Start()
     {
+        // Buscamos al jugador por Tag si no está asignado
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) jugador = playerObj.transform;
     }
@@ -29,12 +27,15 @@ public class EnemigoNave : MonoBehaviour
     {
         if (jugador == null || estaMuriendo) return;
 
-        // Movimiento y rotación hacia el jugador
+        // Movimiento suave hacia el jugador
         transform.position = Vector2.MoveTowards(transform.position, jugador.position, velocidad * Time.deltaTime);
+
+        // Rotación para mirar al jugador
         Vector2 direccion = (Vector2)jugador.position - (Vector2)transform.position;
         float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg - 90f;
         transform.rotation = Quaternion.Euler(0, 0, angulo);
 
+        // Lógica de disparo
         cronometroDisparo += Time.deltaTime;
         if (cronometroDisparo >= tiempoEntreDisparos)
         {
@@ -47,6 +48,7 @@ public class EnemigoNave : MonoBehaviour
     {
         if (estaMuriendo) return;
 
+        // Uso del Pool de balas enemigas
         if (BalaEnemigaPool.Instance != null && puntoDisparo != null)
         {
             GameObject bala = BalaEnemigaPool.Instance.GetBalaEnemiga();
@@ -66,13 +68,15 @@ public class EnemigoNave : MonoBehaviour
     {
         if (estaMuriendo) return;
 
+        // Si nos da una bala del jugador
         if (other.CompareTag("Bala"))
         {
             if (GameManager.Instance != null) GameManager.Instance.GanarPuntos(puntosAlMorir);
-            other.gameObject.SetActive(false); // Desactivar bala del jugador
+            other.gameObject.SetActive(false); // Desactivamos la bala (Pooling)
             StartCoroutine(SecuenciaMuerte());
         }
 
+        // Si chocamos contra el jugador
         if (other.CompareTag("Player"))
         {
             Jugador scriptJugador = other.GetComponent<Jugador>();
@@ -85,11 +89,11 @@ public class EnemigoNave : MonoBehaviour
     {
         estaMuriendo = true;
 
-        // Desactivamos visuales y colisiones inmediatamente
+        // Desactivamos visuales y colisiones para que no siga interactuando mientras explota
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<Collider2D>().enabled = false;
 
-        // Efecto de varias explosiones
+        // Efecto de explosiones encadenadas
         for (int i = 0; i < 3; i++)
         {
             if (efectoExplosion != null)
@@ -100,20 +104,28 @@ public class EnemigoNave : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
 
-        // --- SOLTAR BUFF (25% Probabilidad) ---
-        if (prefabBateriaBuff != null)
+        // --- SOLTAR BUFF DESDE EL POOL (25% Probabilidad) ---
+        if (Random.Range(0f, 100f) <= 25f)
         {
-            float probabilidadSuelto = Random.Range(0f, 100f);
-            if (probabilidadSuelto <= 25f) // Cambiado a 25%
+            if (BuffPool.Instance != null)
             {
-                // Forzamos Z=0 para evitar problemas de visibilidad
-                Vector3 posSpawn = new Vector3(transform.position.x, transform.position.y, 0f);
-                Instantiate(prefabBateriaBuff, posSpawn, Quaternion.identity);
+                // Decidimos qué soltar: 10% de probabilidad de Vida, 90% Cadencia
+                bool esVida = Random.Range(0, 100) < 10;
+
+                // Llamamos al método pasándole el booleano obligatorio
+                GameObject buff = BuffPool.Instance.GetBuff(esVida);
+
+                if (buff != null)
+                {
+                    buff.transform.position = transform.position;
+                    buff.SetActive(true);
+                }
             }
         }
 
         if (GameManager.Instance != null) GameManager.Instance.CheckNivelCompletado();
 
+        // Como la nave no está en un Pool (según tu código), usamos Destroy
         Destroy(gameObject);
     }
 }

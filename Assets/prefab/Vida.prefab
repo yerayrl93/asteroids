@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5332444180887533916}
   - component: {fileID: 1744685994251209359}
   - component: {fileID: 1985326727744073802}
+  - component: {fileID: 7522559754693767231}
   m_Layer: 10
   m_Name: Vida
   m_TagString: VidaExtra
@@ -142,3 +143,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlotarEfecto
   amplitud: 0.5
   frecuencia: 1
+--- !u!114 &7522559754693767231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2056509521586021165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66a1591b7615d9846883971e85808164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuffVida

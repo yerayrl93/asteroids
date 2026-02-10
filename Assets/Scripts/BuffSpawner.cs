@@ -30,8 +30,11 @@ public class BuffSpawner : MonoBehaviour
         Vector3 posicionSpawn = new Vector3(posX, posY, 0f);
 
         // Instanciamos el buff
-        Instantiate(prefabBuff, posicionSpawn, Quaternion.identity);
-
-        Debug.Log("Buff de Cadencia spawneado en: " + posicionSpawn);
+        GameObject buff = BuffPool.Instance.GetBuff();
+        if (buff != null)
+        {
+            buff.transform.position = posicionSpawn; // La posición aleatoria
+            buff.SetActive(true);
+        }
     }
 }

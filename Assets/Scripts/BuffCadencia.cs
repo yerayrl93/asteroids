@@ -15,11 +15,17 @@ public class BuffCadencia : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // Cambiamos el nombre para que coincida con el script del Jugador
-            other.GetComponent<Jugador>().AplicarBuffCadencia(duracionBuff);
+            // Buscamos el componente Jugador
+            Jugador jugador = other.GetComponent<Jugador>();
 
-            // Destruimos la batería al recogerla
-            Destroy(gameObject);
+            if (jugador != null)
+            {
+                jugador.AplicarBuffCadencia(duracionBuff);
+            }
+
+            // --- CAMBIO PARA POOLING ---
+            // En lugar de Destroy(gameObject), lo desactivamos
+            gameObject.SetActive(false);
         }
     }
 }

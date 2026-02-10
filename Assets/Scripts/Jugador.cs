@@ -17,24 +17,21 @@ public class Jugador : MonoBehaviour
 
     [Header("Salud")]
     [SerializeField] private int vidas = 3;
+    [SerializeField] private int vidasMaximas = 5;
     [SerializeField] private GameObject efectoExplosion;
 
     [Header("Ajustes Disparo")]
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
-    // --- VARIABLES PARA EL BUFF ---
     private float tiempoOriginalDisparo;
     private bool tieneBuffCadencia = false;
-    // ------------------------------
-
     private Rigidbody2D naveRigidbody;
     private bool estaVivo = true;
     private bool estaAcelerando = false;
     private float direccionRotacion = 0f;
     private float tiempoProximoDisparo;
 
-    // Límites de pantalla para el Wrap Around
     private float limiteX;
     private float limiteY;
 
@@ -42,16 +39,12 @@ public class Jugador : MonoBehaviour
     {
         naveRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // Guardamos la cadencia original para poder volver a ella tras el buff
         tiempoOriginalDisparo = tiempoEntreDisparos;
 
-        // Calcular límites de pantalla automáticamente basados en la cámara principal
         Camera cam = Camera.main;
         limiteY = cam.orthographicSize;
         limiteX = limiteY * cam.aspect;
 
-        // Escudo inicial al spawnear
         ActivarEscudoTemporal(tiempoInvulnerableNivel);
     }
 
@@ -73,14 +66,11 @@ public class Jugador : MonoBehaviour
     {
         if (!estaVivo) return;
 
-        // Movimiento
         if (estaAcelerando) naveRigidbody.AddForce(transform.up * aceleracionNave);
 
-        // Limitar velocidad
         if (naveRigidbody.linearVelocity.sqrMagnitude > maximaVelocidad * maximaVelocidad)
             naveRigidbody.linearVelocity = naveRigidbody.linearVelocity.normalized * maximaVelocidad;
 
-        // Rotación
         float rotacion = direccionRotacion * rotacionVelocidad * Time.fixedDeltaTime;
         naveRigidbody.MoveRotation(naveRigidbody.rotation + rotacion);
     }
@@ -88,7 +78,6 @@ public class Jugador : MonoBehaviour
     private void HandleEntradas()
     {
         estaAcelerando = Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
-
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) direccionRotacion = 1f;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) direccionRotacion = -1f;
         else direccionRotacion = 0f;
@@ -99,10 +88,8 @@ public class Jugador : MonoBehaviour
         Vector3 pos = transform.position;
         if (pos.x > limiteX + 0.5f) pos.x = -limiteX - 0.5f;
         else if (pos.x < -limiteX - 0.5f) pos.x = limiteX + 0.5f;
-
         if (pos.y > limiteY + 0.5f) pos.y = -limiteY - 0.5f;
         else if (pos.y < -limiteY - 0.5f) pos.y = limiteY + 0.5f;
-
         transform.position = pos;
     }
 
@@ -120,29 +107,35 @@ public class Jugador : MonoBehaviour
         }
     }
 
-    // --- LÓGICA DEL BUFF ---
+    // --- SISTEMA DE BUFFS Y CURACIÓN ---
     public void AplicarBuffCadencia(float duracion)
     {
+        StopCoroutine("RutinaBuff");
         StartCoroutine(RutinaBuff(duracion));
     }
 
     private IEnumerator RutinaBuff(float duracion)
     {
         tieneBuffCadencia = true;
-        // Reducimos el tiempo entre disparos a la mitad (dispara el doble de rápido)
         tiempoEntreDisparos = tiempoOriginalDisparo / 2f;
-
-        // Feedback visual: Nave Amarilla
         spriteRenderer.color = Color.yellow;
 
         yield return new WaitForSeconds(duracion);
 
-        // Volver a la normalidad
         tiempoEntreDisparos = tiempoOriginalDisparo;
         spriteRenderer.color = Color.white;
         tieneBuffCadencia = false;
     }
-    // -----------------------
+
+    public void RecuperarVida()
+    {
+        if (vidas < vidasMaximas)
+        {
+            vidas++;
+            if (VidaPool.Instance != null) VidaPool.Instance.SumarVidaVisual();
+            Debug.Log("Vida recuperada. Vidas actuales: " + vidas);
+        }
+    }
 
     public void TomarDaño()
     {
@@ -178,36 +171,8 @@ public class Jugador : MonoBehaviour
         }
 
         spriteRenderer.enabled = true;
-        // Si justo termina la invulnerabilidad pero seguimos con el Buff, nos aseguramos de ser amarillos
-        if (tieneBuffCadencia) spriteRenderer.color = Color.yellow;
-        else spriteRenderer.color = Color.white;
-
+        spriteRenderer.color = tieneBuffCadencia ? Color.yellow : Color.white;
         esInvulnerable = false;
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        // 1. Detección de Buff de Cadencia (Batería)
-        if (other.CompareTag("BuffCadencia"))
-        {
-            AplicarBuffCadencia(5f); // 5 segundos de super disparo
-            Destroy(other.gameObject);
-            return; // Salimos para no procesar daño si el buff toca a la vez que un enemigo
-        }
-
-        if (esInvulnerable) return;
-
-        if (other.CompareTag("BalaEnemigo") || other.CompareTag("EnemigoNave") || other.CompareTag("Asteroide"))
-        {
-            TomarDaño();
-            if (other.CompareTag("BalaEnemigo")) other.gameObject.SetActive(false);
-        }
-        else if (other.CompareTag("VidaExtra"))
-        {
-            vidas++;
-            if (VidaPool.Instance != null) VidaPool.Instance.SumarVidaVisual();
-            Destroy(other.gameObject);
-        }
     }
 
     private void ResetearPosicion()

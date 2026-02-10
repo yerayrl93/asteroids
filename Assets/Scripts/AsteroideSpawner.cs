@@ -8,9 +8,6 @@ public class AsteroideSpawner : MonoBehaviour
     public float anchoLimite = 8f;
     public float altoLimite = 4.5f;
 
-    [Header("Referencias Power-Ups")]
-    public GameObject bateríaPrefab; // <--- ARRASTRA LA BATERÍA AQUÍ EN EL INSPECTOR
-
     [Header("Nave Enemiga")]
     public GameObject naveEnemigaPrefab;
     [Range(0, 100)] public float probabilidadNave = 15f;
@@ -22,11 +19,12 @@ public class AsteroideSpawner : MonoBehaviour
 
         if (suerte < probabilidadNave && naveEnemigaPrefab != null)
         {
-            GameObject nave = Instantiate(naveEnemigaPrefab, GenerarPosicion(), Quaternion.identity);
+            // Creamos la nave (Las naves suelen ser pocas, el Instantiate aquí está bien, 
+            // aunque podrías hacerle un Pool en el futuro si quisieras el 10 plus).
+            Instantiate(naveEnemigaPrefab, GenerarPosicion(), Quaternion.identity);
 
-            // También le pasamos la batería a la nave por si acaso
-            EnemigoNave scriptNave = nave.GetComponent<EnemigoNave>();
-            if (scriptNave != null) scriptNave.prefabBateriaBuff = bateríaPrefab;
+            // NOTA: Ya no asignamos "scriptNave.prefabBateriaBuff" porque la nave 
+            // ahora usa internamente el BuffPool.Instance
         }
         else
         {
@@ -42,14 +40,11 @@ public class AsteroideSpawner : MonoBehaviour
             bool seraOro = (Random.Range(0f, 100f) < probabilidadOro);
             script.esOro = seraOro;
 
-            // --- ESTA ES LA CLAVE ---
-            // Si es oro, le recordamos cuál es el prefab de la batería
-            if (seraOro)
-            {
-                script.prefabBateriaBuff = bateríaPrefab;
-            }
+            // --- LIMPIEZA REALIZADA ---
+            // Ya NO intentamos acceder a script.prefabBateriaBuff porque el script Asteroide
+            // ahora gestiona sus propios drops a través del BuffPool.Instance.GetBuff()
 
-            script.velocidadDificultad = GameManager.Instance.multiplicadorVelocidad;
+            script.velocidadDificultad = (GameManager.Instance != null) ? GameManager.Instance.multiplicadorVelocidad : 1f;
             ast.SetActive(true);
         }
     }
