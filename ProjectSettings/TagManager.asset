@@ -8,6 +8,7 @@ TagManager:
   - Jugador
   - Bala
   - Limite
+  - VidaExtra
   layers:
   - Default
   - TransparentFX

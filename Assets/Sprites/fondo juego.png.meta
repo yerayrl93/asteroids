@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: c074d60b3569027469a690afe247b0d5
+guid: 9861a8650413b2a40a01f39b6132b918
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8092430098967794038
-    second: bala_0
-  - first:
-      213: -5832054629394815809
-    second: bala_1
+      213: -7157031225034062014
+    second: fondo juego_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -103,45 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bala_0
+      name: fondo juego_0
       rect:
         serializedVersion: 2
-        x: 135
-        y: 265
-        width: 759
-        height: 368
-      alignment: 3
-      pivot: {x: 1, y: 1}
-      border: {x: 0, y: 1, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 67197aaac461e4070800000000000000
-      internalID: 8092430098967794038
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: bala_1
-      rect:
-        serializedVersion: 2
-        x: 935
+        x: 0
         y: 0
-        width: 89
-        height: 18
+        width: 1024
+        height: 1024
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: fb4ef30d631601fa0800000000000000
-      internalID: -5832054629394815809
+      spriteID: 2474779350e1dac90800000000000000
+      internalID: -7157031225034062014
       vertices: []
       indices: 
       edges: []
@@ -150,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 98d7b519cee994d4d93382967b51da2e
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -160,8 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bala_0: 8092430098967794038
-      bala_1: -5832054629394815809
+      fondo juego_0: -7157031225034062014
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
