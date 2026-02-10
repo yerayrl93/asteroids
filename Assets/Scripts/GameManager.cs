@@ -90,6 +90,7 @@ public class GameManager : MonoBehaviour
     public void Morir()
     {
         PlayerPrefs.SetInt("PuntajeFinal", puntos);
+        PlayerPrefs.SetInt("NivelFinal", nivelActual);
         SceneManager.LoadScene("Final");
     }
 }
