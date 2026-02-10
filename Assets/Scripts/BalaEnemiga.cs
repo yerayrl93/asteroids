@@ -4,27 +4,38 @@ public class balaEnemiga : MonoBehaviour
 {
     [SerializeField] private float tiempoDeVida = 4f;
 
-    void Start()
+    private void OnEnable()
     {
-        // La bala se destruye sola después de unos segundos si no choca con nada
-        // Esto evita que el juego se ralentice por tener miles de balas perdidas
-        Destroy(gameObject, tiempoDeVida);
+        // En lugar de Destroy, usamos Invoke para "apagarla" y que vuelva al Pool
+        Invoke("Desactivar", tiempoDeVida);
+    }
+
+    private void OnDisable()
+    {
+        // Importante cancelar el Invoke para que no se apague sola cuando ya está en el Pool
+        CancelInvoke();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Si la bala toca a un enemigo (asteroide o la nave que la disparó), la ignoramos
+        // Ignoramos colisiones con otros enemigos o asteroides
         if (other.CompareTag("Asteroide") || other.CompareTag("EnemigoNave")) return;
 
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<Jugador>().TomarDaño();
-            Destroy(gameObject);
+            Jugador scriptJugador = other.GetComponent<Jugador>();
+            if (scriptJugador != null) scriptJugador.TomarDaño();
+            Desactivar();
         }
 
         if (other.CompareTag("Limite"))
         {
-            Destroy(gameObject);
+            Desactivar();
         }
+    }
+
+    private void Desactivar()
+    {
+        gameObject.SetActive(false);
     }
 }

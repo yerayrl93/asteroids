@@ -34,21 +34,15 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator IniciarNuevoNivel()
     {
-        // 1. UI de nivel
         textoNivel.text = "NIVEL " + nivelActual;
         textoNivel.gameObject.SetActive(true);
 
-        // 2. Activar escudo al jugador al inicio de cada nivel
         Jugador player = FindFirstObjectByType<Jugador>();
-        if (player != null)
-        {
-            player.ActivarEscudoTemporal(3f); // 3 segundos de invulnerabilidad
-        }
+        if (player != null) player.ActivarEscudoTemporal(3f);
 
         yield return new WaitForSeconds(2f);
         textoNivel.gameObject.SetActive(false);
 
-        // 3. Spawn de Asteroides según nivel
         int cantidadASpawnear = asteroidesBase + nivelActual;
         for (int i = 0; i < cantidadASpawnear; i++)
         {
@@ -58,31 +52,30 @@ public class GameManager : MonoBehaviour
 
     public void CheckNivelCompletado()
     {
-        // Pequeño retraso para dejar que los objetos se destruyan/desactiven
-        Invoke("ValidarEnemigosRestantes", 0.1f);
+        // Aumentamos un poco el tiempo para dar margen a la destrucción
+        Invoke("ValidarEnemigosRestantes", 0.2f);
     }
 
     private void ValidarEnemigosRestantes()
     {
-        // Contar Asteroides activos (usando Pool)
+        // 1. Contar asteroides activos
         GameObject[] asteroides = GameObject.FindGameObjectsWithTag("Asteroide");
         int contadorAsteroides = 0;
         foreach (GameObject ast in asteroides) if (ast.activeInHierarchy) contadorAsteroides++;
 
-        // Contar Naves Enemigas
+        // 2. Contar naves enemigas que NO estén muriendo
         GameObject[] naves = GameObject.FindGameObjectsWithTag("EnemigoNave");
-        int contadorNaves = naves.Length;
+        int contadorNaves = 0;
+        foreach (GameObject nave in naves)
+        {
+            // Solo contamos la nave si su collider está activo (si está muriendo, el collider se apaga)
+            if (nave.GetComponent<Collider2D>().enabled) contadorNaves++;
+        }
 
-        // Si la pantalla está limpia, siguiente nivel
         if (contadorAsteroides == 0 && contadorNaves == 0)
         {
-            StopAllCoroutines();
             nivelActual++;
-
-            // Aumento de dificultad progresivo
-            if (multiplicadorVelocidad < 2.0f)
-                multiplicadorVelocidad += 0.1f;
-
+            if (multiplicadorVelocidad < 2.0f) multiplicadorVelocidad += 0.1f;
             StartCoroutine(IniciarNuevoNivel());
         }
     }
@@ -90,7 +83,7 @@ public class GameManager : MonoBehaviour
     public void Morir()
     {
         PlayerPrefs.SetInt("PuntajeFinal", puntos);
-        PlayerPrefs.SetInt("NivelFinal", nivelActual);
+        PlayerPrefs.SetInt("NivelFinal", nivelActual); // Guardamos también el nivel para la pantalla final
         SceneManager.LoadScene("Final");
     }
 }
