@@ -3,8 +3,12 @@ using UnityEngine;
 public class Asteroide : MonoBehaviour
 {
     private Rigidbody2D rb;
-    public int nivel = 3; // 3 = Grande, 2 = Mediano, 1 = Pequeño
+    public int nivel = 3;
     public float velocidadBase = 2f;
+
+    [Header("Configuración Oro")]
+    public bool esOro = false; // Se marca por código o en el Inspector
+    public int multiplicadorOro = 5;
 
     [HideInInspector] public float velocidadDificultad = 1f;
 
@@ -12,22 +16,31 @@ public class Asteroide : MonoBehaviour
 
     private void OnEnable()
     {
-        // 1. Dirección aleatoria
         float angulo = Random.Range(0f, 360f);
         transform.rotation = Quaternion.Euler(0, 0, angulo);
 
-        // 2. Escala visual proporcional al nivel
-        transform.localScale = Vector3.one * (nivel * 0.1f);
+        // Si es oro, lo hacemos un poco más pequeño y brillante
+        if (esOro)
+        {
+            transform.localScale = Vector3.one * (nivel * 0.08f);
+            GetComponent<SpriteRenderer>().color = Color.yellow; // Color dorado
+        }
+        else
+        {
+            transform.localScale = Vector3.one * (nivel * 0.1f);
+            GetComponent<SpriteRenderer>().color = Color.white;
+        }
 
-        // 3. Aplicar velocidad combinada
         float multiplicadorGlobal = (GameManager.Instance != null) ? GameManager.Instance.multiplicadorVelocidad : 1f;
-        rb.linearVelocity = transform.up * (velocidadBase * multiplicadorGlobal * velocidadDificultad);
+
+        // El de oro va un 50% más rápido que uno normal
+        float extraOro = esOro ? 1.5f : 1f;
+        rb.linearVelocity = transform.up * (velocidadBase * multiplicadorGlobal * velocidadDificultad * extraOro);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // COLISIÓN CON BALA O JUGADOR
-        if (other.CompareTag("Bala") || other.CompareTag("Player"))
+        if (other.CompareTag("Bala") || other.CompareTag("Player") || other.CompareTag("BalaEnemigo"))
         {
             if (other.CompareTag("Player"))
             {
@@ -35,25 +48,25 @@ public class Asteroide : MonoBehaviour
                 if (jugador != null) jugador.TomarDaño();
             }
 
-            // --- LÓGICA DE PUNTOS ---
             if (GameManager.Instance != null)
             {
-                // Damos puntos según el nivel (Ej: Grande 100, Mediano 200, Pequeño 300)
                 int puntosAOtorgar = (4 - nivel) * 100;
+                if (esOro) puntosAOtorgar *= multiplicadorOro; // ¡Muchos más puntos!
+
                 GameManager.Instance.GanarPuntos(puntosAOtorgar);
             }
 
-            Dividir();
+            // El de oro no se divide para que sea una pieza única valiosa
+            if (!esOro) Dividir();
+
             gameObject.SetActive(false);
             GameManager.Instance.CheckNivelCompletado();
         }
 
-        // REBOTE EN LÍMITES
         if (other.CompareTag("Limite"))
         {
             rb.linearVelocity = -rb.linearVelocity;
             transform.up = rb.linearVelocity.normalized;
-
             Vector2 direccionAlCentro = ((Vector2)Vector3.zero - (Vector2)transform.position).normalized;
             transform.position += (Vector3)direccionAlCentro * 0.5f;
         }
@@ -65,7 +78,6 @@ public class Asteroide : MonoBehaviour
         {
             gameObject.SetActive(false);
             GameManager.Instance.CheckNivelCompletado();
-            Debug.Log("Asteroide fugitivo capturado.");
         }
     }
 
@@ -82,6 +94,7 @@ public class Asteroide : MonoBehaviour
                 Asteroide scriptClon = clon.GetComponent<Asteroide>();
 
                 scriptClon.nivel = this.nivel - 1;
+                scriptClon.esOro = false; // Los hijos no son de oro
                 scriptClon.velocidadDificultad = this.velocidadDificultad;
 
                 clon.SetActive(true);

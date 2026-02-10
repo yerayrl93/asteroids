@@ -1,30 +1,34 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Jugador : MonoBehaviour
 {
+    // ... Tus variables anteriores se mantienen igual ...
     [Header("Parametros Nave")]
     [SerializeField] private float aceleracionNave = 10f;
     [SerializeField] private float maximaVelocidad = 10f;
     [SerializeField] private float rotacionVelocidad = 180f;
 
-
+    [Header("Invulnerabilidad")]
+    [SerializeField] private float tiempoInvulnerable = 2f;
+    [SerializeField] private float velocidadParpadeo = 0.1f;
+    private bool esInvulnerable = false;
+    private SpriteRenderer spriteRenderer;
 
     [Header("Salud")]
     [SerializeField] private int vidas = 3;
     [SerializeField] private GameObject efectoExplosion;
 
-    // ... (El resto de tus variables de disparo y movimiento se mantienen igual) ...
+    [SerializeField] private GameObject balaPrefab;
+    [SerializeField] private Transform puntoDisparo;
+    [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
     private Rigidbody2D naveRigidbody;
     private bool estaVivo = true;
     private bool estaAcelerando = false;
     private float direccionRotacion = 0f;
     private float tiempoProximoDisparo;
-
-    // Referencias que faltaban en tu código original para que compile bien:
-    [SerializeField] private GameObject balaPrefab;
-    [SerializeField] private Transform puntoDisparo;
-    [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
     private void Start() => naveRigidbody = GetComponent<Rigidbody2D>();
 
@@ -44,7 +48,6 @@ public class Jugador : MonoBehaviour
         if (!estaVivo) return;
         if (estaAcelerando) naveRigidbody.AddForce(transform.up * aceleracionNave);
 
-        // Limitar velocidad
         if (naveRigidbody.linearVelocity.sqrMagnitude > maximaVelocidad * maximaVelocidad)
             naveRigidbody.linearVelocity = naveRigidbody.linearVelocity.normalized * maximaVelocidad;
 
@@ -68,30 +71,61 @@ public class Jugador : MonoBehaviour
 
     public void TomarDaño()
     {
-        if (!estaVivo) return;
+        if (!estaVivo || esInvulnerable) return;
+
         vidas--;
         if (VidaPool.Instance != null) VidaPool.Instance.RestarVidaVisual();
 
         if (vidas <= 0) Muerte();
-        else ResetearPosicion();
+        else
+        {
+            StartCoroutine(ActivarEscudo());
+            ResetearPosicion();
+        }
     }
 
+    private IEnumerator ActivarEscudo()
+    {
+        esInvulnerable = true;
+        float tiempoPasado = 0;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        while (tiempoPasado < tiempoInvulnerable)
+        {
+            spriteRenderer.enabled = !spriteRenderer.enabled;
+            yield return new WaitForSeconds(velocidadParpadeo);
+            tiempoPasado += velocidadParpadeo;
+        }
+
+        spriteRenderer.enabled = true;
+        esInvulnerable = false;
+    }
+
+    // --- AQUÍ ESTÁN LAS MODIFICACIONES DE COLISIÓN ---
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // 1. Detectar Bala Enemiga
+        if (other.CompareTag("BalaEnemigo"))
+        {
+            TomarDaño();
+            Destroy(other.gameObject); // Destruimos la bala que nos pegó
+        }
+
+        // 2. Detectar Nave Enemiga (Colisión física directa)
+        if (other.CompareTag("EnemigoNave"))
+        {
+            TomarDaño();
+            // Opcional: Destruir la nave enemiga al chocar con ella
+            Destroy(other.gameObject);
+        }
+
+        // 3. Detectar Vida Extra
         if (other.CompareTag("VidaExtra"))
         {
-            if (other.CompareTag("VidaExtra"))
-            {
-                vidas++; // Sube la variable lógica
-
-                if (VidaPool.Instance != null)
-                {
-                    VidaPool.Instance.SumarVidaVisual(); // Llama a la nueva lógica
-                }
-
-                Destroy(other.gameObject); // Destruye el objeto del mapa
-                Debug.Log("Vidas actuales: " + vidas);
-            }
+            vidas++;
+            if (VidaPool.Instance != null) VidaPool.Instance.SumarVidaVisual();
+            Destroy(other.gameObject);
+            Debug.Log("Vidas actuales: " + vidas);
         }
     }
 

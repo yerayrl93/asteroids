@@ -697,8 +697,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 650, y: 467.21}
-  m_SizeDelta: {x: 588.6376, y: 94.421}
+  m_AnchoredPosition: {x: -742.0186, y: -467.74}
+  m_SizeDelta: {x: 435.962, y: 144.52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &703154808
 MonoBehaviour:
@@ -717,14 +717,14 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 5
+  m_ChildAlignment: 0
   m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 1
+  m_ChildScaleHeight: 1
   m_ReverseArrangement: 0
 --- !u!114 &703154809
 MonoBehaviour:
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaPool
   vidaPrefab: {fileID: 5982773951263696320, guid: eaa68eae5969edf499f1b9f5f7e01ea7, type: 3}
-  maxVidas: 5
+  vidasIniciales: 3
 --- !u!1 &728678485
 GameObject:
   m_ObjectHideFlags: 0
@@ -772,6 +772,9 @@ MonoBehaviour:
   tiempoSpawn: 0
   anchoLimite: 8
   altoLimite: 4.5
+  naveEnemigaPrefab: {fileID: 55252221341017604, guid: 7e1bd04171a2cb641be6c9b96bca6922, type: 3}
+  probabilidadNave: 50.2
+  probabilidadOro: 15.8
 --- !u!4 &728678487
 Transform:
   m_ObjectHideFlags: 0
@@ -1393,7 +1396,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PowerUpSpawner
   vidaPrefab: {fileID: 2056509521586021165, guid: e9827c2ff959bee46bfbb932cf965667, type: 3}
   tiempoMin: 10
-  tiempoMax: 20
+  tiempoMax: 15
   radioSpawn: 8
 --- !u!4 &2111355235
 Transform:
@@ -1420,7 +1423,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: vidas
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: balaPrefab
@@ -1437,7 +1440,7 @@ PrefabInstance:
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: efectoExplosion
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2570389527295190038, guid: c377502676eaf2140921a995e6c09708, type: 3}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: maximaVelocidad
       value: 8

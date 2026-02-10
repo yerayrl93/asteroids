@@ -8,12 +8,11 @@ public class Bala : MonoBehaviour
 
     private Rigidbody2D rb;
 
-    private void Start() // Cambiado a Start para asegurar que el RB esté listo
+    private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // IMPORTANTE: Le damos velocidad hacia "arriba" relativo a la bala
-        // transform.up es la dirección hacia donde apunta el frente de la bala
+        // La bala sale disparada hacia donde apunta el cañón
         rb.linearVelocity = transform.up * velocidad;
 
         Destroy(gameObject, tiempoVida);
@@ -21,8 +20,11 @@ public class Bala : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Asteroide"))
+        // Añadimos "EnemigoNave" a la lista de cosas que destruyen la bala
+        if (collision.CompareTag("Asteroide") || collision.CompareTag("EnemigoNave"))
         {
+            // NOTA: No hace falta destruir la nave aquí, 
+            // porque la propia nave ya tiene su script que detecta "Bala" y se destruye.
             Destroy(gameObject);
         }
     }

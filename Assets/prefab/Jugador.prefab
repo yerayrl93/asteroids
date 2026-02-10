@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3985106045258524362}
   - component: {fileID: 8755202534072806398}
   - component: {fileID: 869743329294812813}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Jugador
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -181,3 +181,10 @@ MonoBehaviour:
   aceleracionNave: 10
   maximaVelocidad: 10
   rotacionVelocidad: 180
+  tiempoInvulnerable: 2
+  velocidadParpadeo: 0.1
+  vidas: 3
+  efectoExplosion: {fileID: 0}
+  balaPrefab: {fileID: 0}
+  puntoDisparo: {fileID: 0}
+  tiempoEntreDisparos: 0.3

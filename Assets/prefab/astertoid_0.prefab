@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -7912507171064524796}
   - component: {fileID: 2357196744526414994}
   - component: {fileID: -1700865077554179757}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: astertoid_0
   m_TagString: Asteroide
   m_Icon: {fileID: 0}
@@ -107,6 +107,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Asteroide
   nivel: 3
   velocidadBase: 2
+  esOro: 0
+  multiplicadorOro: 5
   velocidadDificultad: 1
 --- !u!50 &2357196744526414994
 Rigidbody2D:

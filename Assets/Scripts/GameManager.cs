@@ -1,5 +1,5 @@
 using System.Collections;
-using TMPro; // Necesitas importar TextMeshPro
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,8 +12,9 @@ public class GameManager : MonoBehaviour
     public int asteroidesBase = 2;
     public float multiplicadorVelocidad = 1f;
     private int puntos = 0;
+
     [Header("Interfaz (UI)")]
-    [SerializeField] private TextMeshProUGUI textoNivel; // Arrastra tu texto aquí
+    [SerializeField] private TextMeshProUGUI textoNivel;
     [SerializeField] private TextMeshProUGUI textoPuntos;
     private AsteroideSpawner spawner;
 
@@ -24,58 +25,60 @@ public class GameManager : MonoBehaviour
         spawner = FindFirstObjectByType<AsteroideSpawner>();
         StartCoroutine(IniciarNuevoNivel());
     }
+
     public void GanarPuntos(int cantidad)
     {
         puntos += cantidad;
         textoPuntos.text = "SCORE: " + puntos;
     }
 
-
-
     public IEnumerator IniciarNuevoNivel()
     {
-        // 1. Mostrar texto de nivel
         textoNivel.text = "NIVEL " + nivelActual;
         textoNivel.gameObject.SetActive(true);
 
-        yield return new WaitForSeconds(2f); // El texto se queda 2 segundos
+        yield return new WaitForSeconds(2f);
 
         textoNivel.gameObject.SetActive(false);
 
-        // 2. Spawnear asteroides (Dificultad por cantidad)
+        // Spawn de Asteroides
         int cantidadASpawnear = asteroidesBase + nivelActual;
         for (int i = 0; i < cantidadASpawnear; i++)
         {
             spawner.SpawnIndividual();
         }
+
+        // Opcional: Podrías añadir aquí lógica para spawnear naves según el nivel
     }
 
     public void CheckNivelCompletado()
     {
-        // Buscamos cuántos asteroides hay activos en la jerarquía
-        GameObject[] asteroidesActivos = GameObject.FindGameObjectsWithTag("Asteroide");
+        // Llamamos a la validación con un pequeñísimo retraso
+        // Esto es para que el objeto que acaba de morir se destruya del todo
+        Invoke("ValidarEnemigosRestantes", 0.1f);
+    }
 
-        // Contamos solo los que realmente están encendidos
-        int contadorReal = 0;
-        foreach (GameObject ast in asteroidesActivos)
-        {
-            if (ast.activeInHierarchy) contadorReal++;
-        }
+    private void ValidarEnemigosRestantes()
+    {
+        // 1. Contar Asteroides
+        GameObject[] asteroides = GameObject.FindGameObjectsWithTag("Asteroide");
+        int contadorAsteroides = 0;
+        foreach (GameObject ast in asteroides) if (ast.activeInHierarchy) contadorAsteroides++;
 
-        // Usamos solo UN bloque de control con una bandera (bool) para evitar ejecuciones dobles
-        // Si quedan 0, pasamos de nivel
-        if (contadorReal == 0)
+        // 2. Contar Naves Enemigas
+        GameObject[] naves = GameObject.FindGameObjectsWithTag("EnemigoNave");
+        int contadorNaves = naves.Length; // Las naves se destruyen, no se desactivan
+
+        Debug.Log($"Enemigos restantes: Asteroides({contadorAsteroides}) Naves({contadorNaves})");
+
+        // 3. Si ambos están en cero, pasar nivel
+        if (contadorAsteroides == 0 && contadorNaves == 0)
         {
-            // Detenemos cualquier intento previo de iniciar nivel para evitar bugs
             StopAllCoroutines();
-
             nivelActual++;
 
-            // Dificultad equilibrada (Tope de 2.0x)
             if (multiplicadorVelocidad < 2.0f)
-            {
-                multiplicadorVelocidad += 0.1f; // Sube de 10% en 10%
-            }
+                multiplicadorVelocidad += 0.1f;
 
             StartCoroutine(IniciarNuevoNivel());
         }
@@ -83,9 +86,7 @@ public class GameManager : MonoBehaviour
 
     public void Morir()
     {
-        // Guardamos los puntos en la memoria del PC/Móvil
         PlayerPrefs.SetInt("PuntajeFinal", puntos);
-        // Cargamos la escena final
         SceneManager.LoadScene("Final");
     }
 }
