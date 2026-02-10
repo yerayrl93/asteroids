@@ -8,8 +8,11 @@ public class AsteroideSpawner : MonoBehaviour
     public float anchoLimite = 8f;
     public float altoLimite = 4.5f;
 
+    [Header("Referencias Power-Ups")]
+    public GameObject bateríaPrefab; // <--- ARRASTRA LA BATERÍA AQUÍ EN EL INSPECTOR
+
     [Header("Nave Enemiga")]
-    public GameObject naveEnemigaPrefab; // Arrastra aquí el prefab de la nave que dispara
+    public GameObject naveEnemigaPrefab;
     [Range(0, 100)] public float probabilidadNave = 15f;
     [Range(0, 100)] public float probabilidadOro = 10f;
 
@@ -17,21 +20,34 @@ public class AsteroideSpawner : MonoBehaviour
     {
         float suerte = Random.Range(0f, 100f);
 
-        // 1. ¿Aparece una nave enemiga?
         if (suerte < probabilidadNave && naveEnemigaPrefab != null)
         {
-            Instantiate(naveEnemigaPrefab, GenerarPosicion(), Quaternion.identity);
+            GameObject nave = Instantiate(naveEnemigaPrefab, GenerarPosicion(), Quaternion.identity);
+
+            // También le pasamos la batería a la nave por si acaso
+            EnemigoNave scriptNave = nave.GetComponent<EnemigoNave>();
+            if (scriptNave != null) scriptNave.prefabBateriaBuff = bateríaPrefab;
         }
-        else // 2. Si no, aparece un asteroide (Normal u Oro)
+        else
         {
             GameObject ast = AsteroidePool.Instance.GetAsteroide();
-            ast.transform.position = GenerarPosicion();
+            if (ast == null) return;
 
+            ast.transform.position = GenerarPosicion();
             Asteroide script = ast.GetComponent<Asteroide>();
+
             script.nivel = 3;
 
-            // Decidir si este asteroide del pool será de oro esta vez
-            script.esOro = (Random.Range(0f, 100f) < probabilidadOro);
+            // Decidimos si es oro
+            bool seraOro = (Random.Range(0f, 100f) < probabilidadOro);
+            script.esOro = seraOro;
+
+            // --- ESTA ES LA CLAVE ---
+            // Si es oro, le recordamos cuál es el prefab de la batería
+            if (seraOro)
+            {
+                script.prefabBateriaBuff = bateríaPrefab;
+            }
 
             script.velocidadDificultad = GameManager.Instance.multiplicadorVelocidad;
             ast.SetActive(true);

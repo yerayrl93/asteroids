@@ -180,9 +180,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemigoNave
   jugador: {fileID: 7839292766620419298, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
-  balaEnemigoPrefab: {fileID: 6610241542778537197, guid: c459622e771fdac4dacec1efd8e391a3, type: 3}
   puntoDisparo: {fileID: 5076513992362165090}
   efectoExplosion: {fileID: 0}
+  prefabBateriaBuff: {fileID: 479833364957294559, guid: f8afdc2fb23d9dc4090cdc9adc94ffd0, type: 3}
   velocidad: 0.5
   tiempoEntreDisparos: 2
   puntosAlMorir: 500

@@ -818,9 +818,10 @@ MonoBehaviour:
   tiempoSpawn: 0
   anchoLimite: 8
   altoLimite: 4.5
+  "bater\xEDaPrefab": {fileID: 479833364957294559, guid: f8afdc2fb23d9dc4090cdc9adc94ffd0, type: 3}
   naveEnemigaPrefab: {fileID: 55252221341017604, guid: 7e1bd04171a2cb641be6c9b96bca6922, type: 3}
-  probabilidadNave: 55.8
-  probabilidadOro: 10.5
+  probabilidadNave: 7.1
+  probabilidadOro: 8.8
 --- !u!4 &728678487
 Transform:
   m_ObjectHideFlags: 0
@@ -1505,6 +1506,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2112610295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2112610297}
+  - component: {fileID: 2112610296}
+  m_Layer: 0
+  m_Name: BuffSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2112610296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2112610295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d395778c036959a41acb4c16a6241198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuffSpawner
+  prefabBuff: {fileID: 479833364957294559, guid: f8afdc2fb23d9dc4090cdc9adc94ffd0, type: 3}
+  tiempoEntreSpawns: 20
+--- !u!4 &2112610297
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2112610295}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 512.8032, y: 423.12494, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &168725542016162620
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1539,7 +1586,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 869743329294812813, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: tiempoEntreDisparos
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3985106045258524362, guid: 4ca032cdc3e654e438c52d65e8733bc5, type: 3}
       propertyPath: m_CollisionDetection
@@ -1624,3 +1671,4 @@ SceneRoots:
   - {fileID: 2111355235}
   - {fileID: 724133825}
   - {fileID: 1095310979}
+  - {fileID: 2112610297}

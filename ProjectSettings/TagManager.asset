@@ -11,6 +11,7 @@ TagManager:
   - VidaExtra
   - BalaEnemigo
   - EnemigoNave
+  - BuffCadencia
   layers:
   - Default
   - TransparentFX

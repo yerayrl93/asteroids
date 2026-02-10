@@ -23,6 +23,11 @@ public class Jugador : MonoBehaviour
     [SerializeField] private Transform puntoDisparo;
     [SerializeField] private float tiempoEntreDisparos = 0.3f;
 
+    // --- VARIABLES PARA EL BUFF ---
+    private float tiempoOriginalDisparo;
+    private bool tieneBuffCadencia = false;
+    // ------------------------------
+
     private Rigidbody2D naveRigidbody;
     private bool estaVivo = true;
     private bool estaAcelerando = false;
@@ -38,12 +43,15 @@ public class Jugador : MonoBehaviour
         naveRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
+        // Guardamos la cadencia original para poder volver a ella tras el buff
+        tiempoOriginalDisparo = tiempoEntreDisparos;
+
         // Calcular límites de pantalla automáticamente basados en la cámara principal
         Camera cam = Camera.main;
-        limiteY = cam.orthographicSize; // Mitad de la altura
-        limiteX = limiteY * cam.aspect; // Mitad de la anchura
+        limiteY = cam.orthographicSize;
+        limiteX = limiteY * cam.aspect;
 
-        // Escudo inicial al spawnear (Nivel 1)
+        // Escudo inicial al spawnear
         ActivarEscudoTemporal(tiempoInvulnerableNivel);
     }
 
@@ -52,7 +60,7 @@ public class Jugador : MonoBehaviour
         if (!estaVivo) return;
 
         HandleEntradas();
-        ScreenWrap(); // Aplicar el efecto Asteroids
+        ScreenWrap();
 
         if (Input.GetKey(KeyCode.Space) && Time.time >= tiempoProximoDisparo)
         {
@@ -89,12 +97,9 @@ public class Jugador : MonoBehaviour
     private void ScreenWrap()
     {
         Vector3 pos = transform.position;
-
-        // Si sale por derecha/izquierda (añadimos un pequeño margen de 0.5f)
         if (pos.x > limiteX + 0.5f) pos.x = -limiteX - 0.5f;
         else if (pos.x < -limiteX - 0.5f) pos.x = limiteX + 0.5f;
 
-        // Si sale por arriba/abajo
         if (pos.y > limiteY + 0.5f) pos.y = -limiteY - 0.5f;
         else if (pos.y < -limiteY - 0.5f) pos.y = limiteY + 0.5f;
 
@@ -114,6 +119,30 @@ public class Jugador : MonoBehaviour
             }
         }
     }
+
+    // --- LÓGICA DEL BUFF ---
+    public void AplicarBuffCadencia(float duracion)
+    {
+        StartCoroutine(RutinaBuff(duracion));
+    }
+
+    private IEnumerator RutinaBuff(float duracion)
+    {
+        tieneBuffCadencia = true;
+        // Reducimos el tiempo entre disparos a la mitad (dispara el doble de rápido)
+        tiempoEntreDisparos = tiempoOriginalDisparo / 2f;
+
+        // Feedback visual: Nave Amarilla
+        spriteRenderer.color = Color.yellow;
+
+        yield return new WaitForSeconds(duracion);
+
+        // Volver a la normalidad
+        tiempoEntreDisparos = tiempoOriginalDisparo;
+        spriteRenderer.color = Color.white;
+        tieneBuffCadencia = false;
+    }
+    // -----------------------
 
     public void TomarDaño()
     {
@@ -149,18 +178,28 @@ public class Jugador : MonoBehaviour
         }
 
         spriteRenderer.enabled = true;
+        // Si justo termina la invulnerabilidad pero seguimos con el Buff, nos aseguramos de ser amarillos
+        if (tieneBuffCadencia) spriteRenderer.color = Color.yellow;
+        else spriteRenderer.color = Color.white;
+
         esInvulnerable = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // 1. Detección de Buff de Cadencia (Batería)
+        if (other.CompareTag("BuffCadencia"))
+        {
+            AplicarBuffCadencia(5f); // 5 segundos de super disparo
+            Destroy(other.gameObject);
+            return; // Salimos para no procesar daño si el buff toca a la vez que un enemigo
+        }
+
         if (esInvulnerable) return;
 
         if (other.CompareTag("BalaEnemigo") || other.CompareTag("EnemigoNave") || other.CompareTag("Asteroide"))
         {
             TomarDaño();
-
-            // Si es bala enemiga, desactivarla (Pool)
             if (other.CompareTag("BalaEnemigo")) other.gameObject.SetActive(false);
         }
         else if (other.CompareTag("VidaExtra"))

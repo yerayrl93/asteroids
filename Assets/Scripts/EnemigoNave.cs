@@ -9,6 +9,9 @@ public class EnemigoNave : MonoBehaviour
     [Header("Configuración Visual")]
     public GameObject efectoExplosion;
 
+    [Header("Referencias Power-Ups")]
+    public GameObject prefabBateriaBuff; // Se asigna desde el Spawner automáticamente
+
     [Header("Ajustes")]
     public float velocidad = 3f;
     public float tiempoEntreDisparos = 2f;
@@ -26,7 +29,7 @@ public class EnemigoNave : MonoBehaviour
     {
         if (jugador == null || estaMuriendo) return;
 
-        // Movimiento y rotación
+        // Movimiento y rotación hacia el jugador
         transform.position = Vector2.MoveTowards(transform.position, jugador.position, velocidad * Time.deltaTime);
         Vector2 direccion = (Vector2)jugador.position - (Vector2)transform.position;
         float angulo = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg - 90f;
@@ -44,7 +47,6 @@ public class EnemigoNave : MonoBehaviour
     {
         if (estaMuriendo) return;
 
-        // --- USO DEL POOL ---
         if (BalaEnemigaPool.Instance != null && puntoDisparo != null)
         {
             GameObject bala = BalaEnemigaPool.Instance.GetBalaEnemiga();
@@ -67,10 +69,7 @@ public class EnemigoNave : MonoBehaviour
         if (other.CompareTag("Bala"))
         {
             if (GameManager.Instance != null) GameManager.Instance.GanarPuntos(puntosAlMorir);
-
-            // Apagamos la bala del jugador (Pool)
-            other.gameObject.SetActive(false);
-
+            other.gameObject.SetActive(false); // Desactivar bala del jugador
             StartCoroutine(SecuenciaMuerte());
         }
 
@@ -85,9 +84,12 @@ public class EnemigoNave : MonoBehaviour
     IEnumerator SecuenciaMuerte()
     {
         estaMuriendo = true;
+
+        // Desactivamos visuales y colisiones inmediatamente
         GetComponent<SpriteRenderer>().enabled = false;
         GetComponent<Collider2D>().enabled = false;
 
+        // Efecto de varias explosiones
         for (int i = 0; i < 3; i++)
         {
             if (efectoExplosion != null)
@@ -96,6 +98,18 @@ public class EnemigoNave : MonoBehaviour
                 Instantiate(efectoExplosion, transform.position + offset, Quaternion.identity);
             }
             yield return new WaitForSeconds(0.1f);
+        }
+
+        // --- SOLTAR BUFF (25% Probabilidad) ---
+        if (prefabBateriaBuff != null)
+        {
+            float probabilidadSuelto = Random.Range(0f, 100f);
+            if (probabilidadSuelto <= 25f) // Cambiado a 25%
+            {
+                // Forzamos Z=0 para evitar problemas de visibilidad
+                Vector3 posSpawn = new Vector3(transform.position.x, transform.position.y, 0f);
+                Instantiate(prefabBateriaBuff, posSpawn, Quaternion.identity);
+            }
         }
 
         if (GameManager.Instance != null) GameManager.Instance.CheckNivelCompletado();
